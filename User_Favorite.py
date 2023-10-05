@@ -10,6 +10,19 @@ from sklearn.preprocessing import LabelEncoder
 le_gender = LabelEncoder()
 le_item = LabelEncoder()
 
+st.set_page_config(initial_sidebar_state="collapsed")
+
+st.markdown(
+    """
+<style>
+    [data-testid="collapsedControl"] {
+        display: none
+    }
+</style>
+""",
+    unsafe_allow_html=True,
+)
+
 # Upload dataset
 
 st.title("Predict the Top N Probable Items to be Purchased")
