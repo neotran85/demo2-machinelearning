@@ -9,7 +9,9 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.preprocessing import LabelEncoder
 le_gender = LabelEncoder()
 le_item = LabelEncoder()
+
 # Upload dataset
+
 st.title("Predict the Top N Probable Items to be Purchased")
 uploaded_file = st.file_uploader("Upload your data.csv file", type="csv")
 
@@ -58,6 +60,11 @@ def get_top_n_probable_items(clf, age, gender, n=10):
     return sorted_items, sorted_probs
 
 if uploaded_file is not None:
-    # Load dataset
-    data = pd.read_csv(uploaded_file)
-    initUI(data)
+    try:
+      # Load dataset
+      data = pd.read_csv(uploaded_file)  
+      initUI(data)
+    except:
+      data = pd.read_csv('trend.csv')
+      initUI(data)
+    
