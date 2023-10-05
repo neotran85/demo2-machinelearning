@@ -1,51 +1,63 @@
-# Copyright (c) Streamlit Inc. (2018-2022) Snowflake Inc. (2022)
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
+import pandas as pd
+import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.metrics import accuracy_score
 import streamlit as st
-from streamlit.logger import get_logger
+import matplotlib.pyplot as plt
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.preprocessing import LabelEncoder
+le_gender = LabelEncoder()
+le_item = LabelEncoder()
+# Upload dataset
+st.title("Predict the Top N Probable Items to be Purchased")
+uploaded_file = st.file_uploader("Upload your data.csv file", type="csv")
 
-LOGGER = get_logger(__name__)
+def initUI(df):
+  # Label encoding
+  
+  df['Gender'] = le_gender.fit_transform(df['Gender'])
+  df['Item Purchased'] = le_item.fit_transform(df['Item Purchased'])
+
+  # Splitting the data
+  X = df[['Age', 'Gender']]
+  y = df['Item Purchased']
+  X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+  # Training the classifier
+  clf = RandomForestClassifier(n_estimators=100, random_state=42)
+  clf.fit(X_train, y_train)
+  # Streamlit interface
+
+  # User inputs
+  age = st.slider("Select Age", 20, 70)
+  gender = st.radio("Select Gender", ["Male", "Female"])
+
+  predicted_items, probabilities = get_top_n_probable_items(clf, age, gender)
+
+  # Visualization
+  fig, ax = plt.subplots(figsize=(10, 6))
+  ax.pie(probabilities, labels=predicted_items, startangle=90, autopct='%1.1f%%')
+  ax.axis('equal')
+  plt.title('Top N Probable Items')
+  st.pyplot(fig)
 
 
-def run():
-    st.set_page_config(
-        page_title="Hello",
-        page_icon="👋",
-    )
+def get_top_n_probable_items(clf, age, gender, n=10):
+    # Encoding the inputs
+    gender_encoded = le_gender.transform([gender])[0]
+    
+    # Predicting probabilities
+    probs = clf.predict_proba([[age, gender_encoded]])[0]
+    
+    # Sorting items based on probabilities
+    sorted_indices = probs.argsort()[::-1][:n]
+    sorted_probs = probs[sorted_indices]
+    sorted_items = le_item.inverse_transform(sorted_indices)
+    
+    return sorted_items, sorted_probs
 
-    st.write("# Welcome to Streamlit! 👋")
-
-    st.sidebar.success("Select a demo above.")
-
-    st.markdown(
-        """
-        Streamlit is an open-source app framework built specifically for
-        Machine Learning and Data Science projects.
-        **👈 Select a demo from the sidebar** to see some examples
-        of what Streamlit can do!
-        ### Want to learn more?
-        - Check out [streamlit.io](https://streamlit.io)
-        - Jump into our [documentation](https://docs.streamlit.io)
-        - Ask a question in our [community
-          forums](https://discuss.streamlit.io)
-        ### See more complex demos
-        - Use a neural net to [analyze the Udacity Self-driving Car Image
-          Dataset](https://github.com/streamlit/demo-self-driving)
-        - Explore a [New York City rideshare dataset](https://github.com/streamlit/demo-uber-nyc-pickups)
-    """
-    )
-
-
-if __name__ == "__main__":
-    run()
+if uploaded_file is not None:
+    # Load dataset
+    data = pd.read_csv(uploaded_file)
+    initUI(data)
