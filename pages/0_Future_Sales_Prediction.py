@@ -1,4 +1,3 @@
-
 import streamlit as st
 from collections import namedtuple
 import altair as alt
@@ -21,14 +20,19 @@ from prophet import Prophet
 import streamlit as st
 
 st.title("Forecasted Number of Customers Using Prophet with Japanese Holidays")
+st.sidebar.markdown("""
+**Potential Business Benefits:**
 
-# Upload dataset
-uploaded_file = st.file_uploader("Upload your campaign.csv file", type="csv")
+1. **Informed Decision Making:** By visualizing customer trends over time, businesses can make informed decisions regarding marketing campaigns, inventory management, and resource allocation.
+2. **Proactive Approach:** The forecasting feature allows businesses to prepare for expected customer counts in advance, optimizing resource utilization.
+3. **Targeted Marketing:** Understanding the distribution of customers based on education and marital status can allow for more targeted marketing campaigns.
+4. **Cultural Sensitivity:** By acknowledging and incorporating Japanese holidays, businesses can better tailor their strategies to the Japanese market, whether it's for marketing campaigns, promotions, or inventory management.
+5. **Customizability:** The code provides options for users to upload their datasets or use a default one, making it versatile for various business needs.
 
-# Check if a file is uploaded
+""")
 
-
-def drawPrediction(data):
+def processData(filename):
+    data = pd.read_csv(filename, delimiter=';')
     # Hypothetical prior scales based on expected impact
     strong_effect = 10
     weak_effect = 0.5
@@ -137,8 +141,6 @@ def drawPrediction(data):
 
     st.pyplot(fig)
 
-
-
     # Create a figure and axes object
     fig, ax = plt.subplots(figsize=(10, 10))
 
@@ -175,13 +177,15 @@ def drawPrediction(data):
     st.write("Displaying the entire dataset:")
     st.write(data)
 
+# Choice for the user
+choice = st.radio('Choose a data source', ['Upload my own dataset', 'Use default dataset'])
 
-if uploaded_file is not None:
-    try:
-        # Load dataset
-        data = pd.read_csv(uploaded_file, delimiter=';')
-        drawPrediction(data)
-    except:
-        data = pd.read_csv('campaign.csv', delimiter=';')
-        drawPrediction(data)
-
+if choice == 'Upload my own dataset':
+    uploaded_file = st.file_uploader("Upload your dataset (csv file)", type="csv")
+    if uploaded_file is not None:
+        try:
+            processData(uploaded_file)
+        except:
+            processData('campaign.csv')
+else:
+    processData('campaign.csv')
