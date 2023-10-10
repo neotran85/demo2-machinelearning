@@ -9,7 +9,15 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.preprocessing import LabelEncoder
 le_gender = LabelEncoder()
 le_item = LabelEncoder()
+import base64
 
+
+# Function to convert image to base64
+def get_image_base64(path):
+    with open(path, "rb") as img_file:
+        return base64.b64encode(img_file.read()).decode('utf-8')
+logo = get_image_base64("logo1.png")
+st.sidebar.markdown(f'<img id="telegram_avatar" src="data:image/png;base64,{logo}" style="height:60px; display:inline; margin-right:10px;"/>', unsafe_allow_html=True)
 
 # Upload dataset
 st.title("Predict the Top N Probable Items to be Purchased")
